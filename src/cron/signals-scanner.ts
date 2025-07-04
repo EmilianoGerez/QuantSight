@@ -1,4 +1,3 @@
-// src/jobs/signal-detector.ts
 
 import db from "@/lib/db";
 import { SignalService } from "@/modules/signals/signals.services";
