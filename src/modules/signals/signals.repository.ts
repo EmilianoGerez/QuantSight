@@ -30,7 +30,16 @@ export class SignalRepository implements ISignalRepository {
     params.push(limit);
 
     const result = await pool.query(query, params);
-    return result.rows;
+    return result.rows.map(row => ({
+      id: row.id,
+      symbol: row.symbol,
+      name: row.name,
+      detail: row.detail,
+      created_at: row.created_at,
+      date: row.date ?? row.created_at, // fallback if date is not present
+      type: row.type ?? '', // provide default or map accordingly
+      description: row.description ?? '', // provide default or map accordingly
+    }));
   }
 
   async exists(
