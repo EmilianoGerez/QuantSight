@@ -1,5 +1,5 @@
 // src/pages/api/search-symbols.ts
-import { YahooFinanceRepository } from "@/external/repositories/yahoo.repository";
+import { YahooFinanceRepository } from "@/infrastructure/repository/yahoo.repository";
 import { WatchlistRepository } from "@/modules/watchlist/watchlist.repository";
 import { WatchlistService } from "@/modules/watchlist/watchlist.service";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -9,7 +9,10 @@ const yahooRepo = new YahooFinanceRepository();
 const repo = new WatchlistRepository();
 const service = new WatchlistService(repo, yahooRepo);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const query = req.query.q as string;
   if (!query) return res.status(400).json({ error: "Missing query" });
 

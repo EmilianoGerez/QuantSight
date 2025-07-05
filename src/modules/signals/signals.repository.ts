@@ -1,5 +1,5 @@
 // src/repositories/signals.ts
-import pool from "@/lib/db";
+import pool from "@/infrastructure/repository/db/db";
 import { Signal } from "./types";
 import { ISignalRepository } from "./interfaces";
 
@@ -30,15 +30,15 @@ export class SignalRepository implements ISignalRepository {
     params.push(limit);
 
     const result = await pool.query(query, params);
-    return result.rows.map(row => ({
+    return result.rows.map((row) => ({
       id: row.id,
       symbol: row.symbol,
       name: row.name,
       detail: row.detail,
       created_at: row.created_at,
       date: row.date ?? row.created_at, // fallback if date is not present
-      type: row.type ?? '', // provide default or map accordingly
-      description: row.description ?? '', // provide default or map accordingly
+      type: row.type ?? "", // provide default or map accordingly
+      description: row.description ?? "", // provide default or map accordingly
     }));
   }
 

@@ -1,5 +1,4 @@
-
-import db from "@/lib/db";
+import db from "@/infrastructure/repository/db/db";
 import { SignalService } from "@/modules/signals/signals.services";
 import { StockService } from "@/modules/stocks/stock.service";
 import { StockRepository } from "@/modules/stocks/stock.repository";
@@ -22,7 +21,9 @@ async function run() {
   for (const { symbol } of symbols) {
     console.log(`\n[Signal Job] Checking: ${symbol}`);
 
-    const { prices, indicators } = await stockService.getIntradayHistorical(symbol);
+    const { prices, indicators } = await stockService.getIntradayHistorical(
+      symbol
+    );
     const signals = signalService.detectSignals(symbol, prices, indicators);
 
     for (const signal of signals) {

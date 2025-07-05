@@ -1,13 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { WatchlistRepository } from "@/modules/watchlist/watchlist.repository";
 import { WatchlistService } from "@/modules/watchlist/watchlist.service";
-import { YahooFinanceRepository } from "@/external/repositories/yahoo.repository";
+import { YahooFinanceRepository } from "@/infrastructure/repository/yahoo.repository";
 
 const repo = new WatchlistRepository();
 const yahooRepo = new YahooFinanceRepository();
 const service = new WatchlistService(repo, yahooRepo);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method === "GET") {
     // Get all watchlist items
     try {
