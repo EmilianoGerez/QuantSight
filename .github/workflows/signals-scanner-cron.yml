@@ -1,0 +1,28 @@
+name: Signal Scanner Cron
+
+on:
+  schedule:
+    # Every hour from 9 to 17 (5pm) Mon-Fri, New York time (Eastern Time)
+    - cron: '0 13-21 * * 1-5' # UTC is 4 hours ahead of NY during EDT, 5 during EST
+  workflow_dispatch:
+
+jobs:
+  run-signal-scanner:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run signals-scanner
+        run: npx ts-node src/cron/signals-scanner.ts
