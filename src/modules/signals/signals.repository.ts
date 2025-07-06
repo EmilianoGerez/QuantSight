@@ -1,5 +1,5 @@
 // src/repositories/signals.ts
-import pool from "@/infrastructure/repository/db/db";
+import pool from "@/infrastructure/db/db";
 import { Signal } from "./types";
 import { ISignalRepository } from "./interfaces";
 

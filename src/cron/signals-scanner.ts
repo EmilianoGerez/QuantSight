@@ -1,4 +1,4 @@
-import db from "@/infrastructure/repository/db/db";
+import db from "@/infrastructure/db/db";
 import { SignalService } from "@/modules/signals/signals.services";
 import { StockService } from "@/modules/stocks/stock.service";
 import { StockRepository } from "@/modules/stocks/stock.repository";
