@@ -7,65 +7,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/swr-fetcher";
 
 export default function OptionsPage() {
   const [symbol, setSymbol] = useState<string>("");
   const [inputSymbol, setInputSymbol] = useState<string>("");
-  const [optionsData, setOptionsData] = useState<OptionRow[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [selectedExpiration, setSelectedExpiration] = useState<string | null>(
     null
   );
   const [sortBy, setSortBy] = useState<"strike" | "iv">("strike");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  const fetchOptionsData = async (symbolToFetch: string) => {
-    if (!symbolToFetch.trim()) return;
-
-    setIsLoading(true);
-    setError(null);
-    setSelectedExpiration(null); // Reset filter when fetching new data
-
-    try {
-      const response = await fetch(
-        `/api/options-chain?symbol=${symbolToFetch}`
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const data: OptionRow[] = await response.json();
-      setOptionsData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load data");
-      setOptionsData([]);
-    } finally {
-      setIsLoading(false);
+  // SWR for options data
+  const {
+    data: optionsData,
+    error,
+    isLoading,
+  } = useSWR<OptionRow[]>(
+    symbol ? `/api/options-chain?symbol=${symbol}` : null,
+    fetcher,
+    {
+      refreshInterval: 15_000, // 15 s polling
+      revalidateOnFocus: true,
+      dedupingInterval: 10_000,
     }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      const trimmedSymbol = inputSymbol.trim().toUpperCase();
-      if (trimmedSymbol) {
-        setSymbol(trimmedSymbol);
-        fetchOptionsData(trimmedSymbol);
-      }
-    }
-  };
+  );
 
   // Filter out expired contracts and apply expiration filter
   const filteredOptionsData = useMemo(() => {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0); // Set to start of day for comparison
 
-    let filtered = optionsData.filter((option) => {
+    let filtered = optionsData?.filter((option) => {
       const expirationDate = new Date(option.expiration + "T00:00:00"); // Add time to avoid timezone issues
       return expirationDate >= currentDate; // Only non-expired contracts
     });
 
     if (selectedExpiration) {
-      filtered = filtered.filter(
+      filtered = filtered?.filter(
         (option) => option.expiration === selectedExpiration
       );
     }
@@ -79,7 +59,7 @@ export default function OptionsPage() {
     currentDate.setHours(0, 0, 0, 0);
 
     const validExpirations = optionsData
-      .filter((option) => {
+      ?.filter((option) => {
         const expirationDate = new Date(option.expiration + "T00:00:00"); // Add time to avoid timezone issues
         return expirationDate >= currentDate;
       })
@@ -89,7 +69,7 @@ export default function OptionsPage() {
 
     // Group by month/year
     const groups: { [key: string]: string[] } = {};
-    validExpirations.forEach((expiration) => {
+    validExpirations?.forEach((expiration) => {
       const date = new Date(expiration + "T00:00:00"); // Add time to avoid timezone issues
       const monthYear = date.toLocaleDateString("en-US", {
         month: "short",
@@ -127,10 +107,10 @@ export default function OptionsPage() {
   };
 
   const callsData = sortData(
-    filteredOptionsData.filter((option) => option.type === "call")
+    filteredOptionsData?.filter((option) => option.type === "call") || []
   );
   const putsData = sortData(
-    filteredOptionsData.filter((option) => option.type === "put")
+    filteredOptionsData?.filter((option) => option.type === "put") || []
   );
 
   const handleSort = (field: "strike" | "iv") => {
@@ -139,6 +119,15 @@ export default function OptionsPage() {
     } else {
       setSortBy(field);
       setSortOrder("asc");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const trimmedSymbol = inputSymbol.trim().toUpperCase();
+      if (trimmedSymbol) {
+        setSymbol(trimmedSymbol);
+      }
     }
   };
 
