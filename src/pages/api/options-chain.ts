@@ -1,13 +1,15 @@
 import getFullSnapshot from "@/application/use-case/getFullSnapshot";
-import { prisma } from "@/infrastructure/db/prisma-orm";
 import AlpacaRepository from "@/infrastructure/repository/alpaca.repository";
+import OptionsRepository from "@/infrastructure/repository/options.repository";
 import { NextApiRequest, NextApiResponse } from "next";
 
-/** TTL in ms (default 15 min) */
-const TTL = (Number(process.env.CHAIN_SNAPSHOT_TTL_MIN) || 15) * 60_000;
-const repo = new AlpacaRepository();
+const alpacaRepo = new AlpacaRepository();
+const optionsRepo = new OptionsRepository();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
@@ -15,28 +17,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { symbol } = req.query;
 
   if (typeof symbol !== "string" || !symbol) {
-    return res.status(400).json({ error: "Missing or invalid 'symbol' parameter" });
+    return res
+      .status(400)
+      .json({ error: "Missing or invalid 'symbol' parameter" });
   }
 
-  // 1️⃣ try recent cache
-  const cached = await prisma.optionSnapshot.findFirst({
-    where: { symbol, snapshotAt: { gte: new Date(Date.now() - TTL) } },
-    orderBy: { snapshotAt: "desc" },
-  });
+  const cached = await optionsRepo.getCachedSnapshot(symbol);
   if (cached) return res.json(cached.data);
 
-    // 2️⃣ fetch from Alpaca
-  const rows = await getFullSnapshot(symbol, repo);
+  const rows = await getFullSnapshot(symbol, alpacaRepo);
 
-  // 3️⃣ persist
-  await prisma.optionSnapshot.create({
-    data: {
-      symbol,
-      data: JSON.parse(JSON.stringify(rows)),
-      snapshotAt: new Date(),
-    },
-  });
+  await optionsRepo.createSnapshot(symbol, rows);
 
   return res.json(rows);
 }
-

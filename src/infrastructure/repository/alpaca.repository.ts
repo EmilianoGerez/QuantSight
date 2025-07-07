@@ -1,5 +1,6 @@
 import Alpaca from "@alpacahq/alpaca-trade-api";
 import { AlpacaOptionsChainResponse } from "@/infrastructure/contract/alpaca-options-snapshots.contract";
+import { IAlpacaRepository } from "@/domain/repository/alpaca.repository";
 
 export default class AlpacaRepository implements IAlpacaRepository {
   private readonly alpaca: Alpaca;
