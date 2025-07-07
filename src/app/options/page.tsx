@@ -6,7 +6,10 @@ import { OptionRow } from "@/domain/model/option-row.model";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import {
+  MagnifyingGlassIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
 import useSWR from "swr";
 import { fetcher } from "@/lib/swr-fetcher";
 
@@ -24,6 +27,7 @@ export default function OptionsPage() {
     data: optionsData,
     error,
     isLoading,
+    mutate,
   } = useSWR<OptionRow[]>(
     symbol ? `/api/options-chain?symbol=${symbol}` : null,
     fetcher,
@@ -144,7 +148,22 @@ export default function OptionsPage() {
             onKeyPress={handleKeyPress}
             placeholder="AAPL"
           />
-          <Search className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+          <MagnifyingGlassIcon className="absolute right-7 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+          {/* Refresh button next to input, cleaner UI */}
+          <button
+            type="button"
+            aria-label="Refresh"
+            onClick={() => mutate()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
+            style={{
+              padding: 0,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <ArrowPathIcon className="w-4 h-4" />
+          </button>
         </div>
 
         {symbol && Object.keys(expirationGroups).length > 0 && (
