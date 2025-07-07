@@ -1,0 +1,18 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model OptionSnapshot {
+  id         BigInt   @id @default(autoincrement())
+  symbol     String
+  snapshotAt DateTime @default(now()) @db.Timestamptz(3)
+  data       Json
+
+  @@index([symbol, snapshotAt])
+}

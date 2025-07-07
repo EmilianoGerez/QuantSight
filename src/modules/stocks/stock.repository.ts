@@ -1,5 +1,5 @@
 // src/modules/stocks/stock.repository.ts
-import pool from "@/infrastructure/repository/db/db";
+import pool from "@/infrastructure/db/db";
 import { IStockRepository } from "./interfaces";
 import { StockPrice } from "./types";
 

@@ -1,4 +1,4 @@
-import pool from "@/infrastructure/repository/db/db";
+import pool from "@/infrastructure/db/db";
 import { WatchlistItem } from "./types";
 
 export class WatchlistRepository {
