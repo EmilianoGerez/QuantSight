@@ -27,6 +27,7 @@ export default function OptionsPage() {
     data: optionsData,
     error,
     isLoading,
+    isValidating,
     mutate,
   } = useSWR<OptionRow[]>(
     symbol ? `/api/options-chain?symbol=${symbol}` : null,
@@ -154,7 +155,8 @@ export default function OptionsPage() {
             type="button"
             aria-label="Refresh"
             onClick={() => mutate()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
+            disabled={isValidating}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               padding: 0,
               background: "none",
