@@ -1,6 +1,7 @@
 import Alpaca from "@alpacahq/alpaca-trade-api";
 import { AlpacaOptionsChainResponse } from "@/infrastructure/contract/alpaca-options-snapshots.contract";
 import { IAlpacaRepository } from "@/domain/repository/alpaca.repository";
+import { AlpacaLatestStockQuote } from "../contract/alpace-stocks-lastest-quote.contract";
 
 export default class AlpacaRepository implements IAlpacaRepository {
   private readonly alpaca: Alpaca;
@@ -26,7 +27,10 @@ export default class AlpacaRepository implements IAlpacaRepository {
     return r.json();
   }
 
-  async getOptionsChain(symbol: string, nextPageToken?: string): Promise<AlpacaOptionsChainResponse> {
+  async getOptionsChain(
+    symbol: string,
+    nextPageToken?: string
+  ): Promise<AlpacaOptionsChainResponse> {
     try {
       const params = {
         feed: "indicative",
@@ -41,6 +45,19 @@ export default class AlpacaRepository implements IAlpacaRepository {
       return data as AlpacaOptionsChainResponse;
     } catch (error) {
       console.error("Error fetching options chain:", error);
+      throw error;
+    }
+  }
+
+  async getLatestStockQuote(symbol: string): Promise<AlpacaLatestStockQuote> {
+    try {
+      const url = `https://data.alpaca.markets/v2/stocks/${encodeURIComponent(
+        symbol
+      )}/quotes/latest?feed=delayed_sip`;
+      const data = await this.alpacaFetch(url);
+      return data as AlpacaLatestStockQuote;
+    } catch (error) {
+      console.error("Error fetching latest stock quote:", error);
       throw error;
     }
   }
