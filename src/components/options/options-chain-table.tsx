@@ -10,17 +10,21 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OptionRow } from "@/domain/model/option-row.model";
+import { StrategyLeg } from "@/domain/model/option-strategy-leg";
+import { Button } from "@/components/ui/button";
 
 type OptionsChainTableProps = {
   optionsData: OptionRow[];
   isLoading: boolean;
   error: string | null;
+  onAddLeg?: (leg: StrategyLeg) => void;
 };
 
 export const OptionsChainTable: React.FC<OptionsChainTableProps> = ({
   optionsData,
   isLoading,
   error,
+  onAddLeg,
 }) => {
   /* ----------  UI states  ---------- */
   if (isLoading) return <SkeletonTable />;
@@ -56,6 +60,7 @@ export const OptionsChainTable: React.FC<OptionsChainTableProps> = ({
           <TableHead>Θ</TableHead>
           <TableHead>Vega</TableHead>
           <TableHead>Rho</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
 
@@ -77,6 +82,30 @@ export const OptionsChainTable: React.FC<OptionsChainTableProps> = ({
             <NumericCell value={row.theta} />
             <NumericCell value={row.vega} />
             <NumericCell value={row.rho} />
+            <TableCell>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-2 py-1 text-xs border-green-600 text-green-700 hover:bg-green-50 hover:border-green-700"
+                  onClick={() =>
+                    onAddLeg?.({ ...row, side: "buy", quantity: 1 })
+                  }
+                >
+                  Buy
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-2 py-1 text-xs border-red-600 text-red-700 hover:bg-red-50 hover:border-red-700"
+                  onClick={() =>
+                    onAddLeg?.({ ...row, side: "sell", quantity: 1 })
+                  }
+                >
+                  Sell
+                </Button>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

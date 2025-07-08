@@ -23,11 +23,13 @@ export default async function handler(
   }
 
   const cached = await optionsRepo.getCachedSnapshot(symbol);
-  if (cached) return res.json(cached.data);
+  if (cached) {
+    const latestQuote = await alpacaRepo.getLatestStockQuote(symbol);
+    return res.json({ latestQuote: latestQuote, rows: cached.data });
+  }
 
   const rows = await getFullSnapshot(symbol, alpacaRepo);
-
   await optionsRepo.createSnapshot(symbol, rows);
-
-  return res.json(rows);
+  const latestQuote = await alpacaRepo.getLatestStockQuote(symbol);
+  return res.json({ latestQuote: latestQuote, rows });
 }
