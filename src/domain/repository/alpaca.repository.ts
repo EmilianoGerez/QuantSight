@@ -1,5 +1,5 @@
 import { AlpacaOptionsChainResponse } from "@/infrastructure/contract/alpaca-options-snapshots.contract";
-import { AlpacaLatestStockQuote } from "@/infrastructure/contract/alpace-stocks-lastest-quote.contract";
+import { AlpacaLatestStockQuote } from "@/infrastructure/contract/alpaca-stocks-latest-quote.contract";
 
 export interface IAlpacaRepository {
   getOptionsChain(

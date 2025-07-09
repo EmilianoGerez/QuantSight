@@ -15,7 +15,7 @@ import { fetcher } from "@/lib/swr-fetcher";
 import { StrategyLeg } from "@/domain/model/option-strategy-leg";
 import { StrategySummaryPanel } from "@/components/options/strategy/strategy-summary-panel";
 import { PayoffChart } from "@/components/options/strategy/payoff-chart";
-import { AlpacaLatestStockQuote } from "@/infrastructure/contract/alpace-stocks-lastest-quote.contract";
+import { AlpacaLatestStockQuote } from "@/infrastructure/contract/alpaca-stocks-latest-quote.contract";
 import { AiStrategyBuilder } from "@/components/options/strategy/ai-strategy-builder";
 import { LlmStrategyRequest } from "@/infrastructure/contract/llm-strategy-request.contract";
 import { LlmStrategySuggestion } from "@/infrastructure/contract/llm-strategy-suggestion.contract";
@@ -181,8 +181,6 @@ export default function OptionsPage() {
         return;
       }
       const result: LlmStrategySuggestion = await response.json();
-      console.log("LLM Strategy Suggestion:", result);
-      console.log("LLM Strategy Legs:", result.legs);
       setBasket(llmLegsToStrategyLegs(result.legs, optionsData || []));
       setAiSuggestion(result);
     } catch (err) {

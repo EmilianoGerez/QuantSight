@@ -1,10 +1,10 @@
 export interface WatchlistItem {
   id: number;
   symbol: string;
-  name?: string;
-  exchange?: string;
+  name?: string | null;
+  exchange?: string | null;
   provider: string;
-  added_at: string;
+  addedAt: Date;
 }
 
 export type SymbolResult = {

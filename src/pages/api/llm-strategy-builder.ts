@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { OpenAI } from "openai";
-import { StrategyLeg } from "@/domain/model/option-strategy-leg";
 import { LlmStrategyRequest } from "@/infrastructure/contract/llm-strategy-request.contract";
 import { LlmStrategySuggestion } from "@/infrastructure/contract/llm-strategy-suggestion.contract";
 
@@ -58,13 +57,7 @@ Only respond with JSON in this structure:
     if (!match) return res.status(400).json({ error: "No JSON found" });
 
     try {
-      const suggestion: LlmStrategySuggestion = JSON.parse(match[0]) as {
-        name: string;
-        rationale: string;
-        outlook: string;
-        riskProfile: string;
-        legs: StrategyLeg[];
-      };
+      const suggestion: LlmStrategySuggestion = JSON.parse(match[0]) as LlmStrategySuggestion;
       return res.status(200).json(suggestion);
     } catch {
       return res.status(500).json({ error: "Failed to parse LLM JSON" });

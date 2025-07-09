@@ -4,5 +4,5 @@ export type LlmStrategySuggestion = {
   rationale: string;
   outlook: string;
   riskProfile: string;
-  legs: { action: string; contract: string; quantity: number }[];
+  legs: { action: string; contract: string; quantity: number, strike: number }[];
 };

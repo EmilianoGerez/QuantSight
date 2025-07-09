@@ -1,12 +1,12 @@
-import pool from "@/infrastructure/db/db";
+import { prisma } from "@/infrastructure/db/prisma-orm";
 import { WatchlistItem } from "./types";
 
 export class WatchlistRepository {
   async getAll(): Promise<WatchlistItem[]> {
-    const result = await pool.query(
-      "SELECT * FROM watchlist ORDER BY added_at DESC"
-    );
-    return result.rows;
+    const result: WatchlistItem[] = await prisma.watchlist.findMany({
+      orderBy: { addedAt: "desc" },
+    });
+    return result;
   }
 
   async add(
@@ -15,17 +15,31 @@ export class WatchlistRepository {
     exchange?: string,
     provider = "yahoo"
   ): Promise<void> {
-    await pool.query(
-      `INSERT INTO watchlist (symbol, name, exchange, provider)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (symbol) DO NOTHING`,
-      [symbol.toUpperCase(), name || null, exchange || null, provider]
-    );
+    try {
+      await prisma.watchlist.create({
+        data: {
+          symbol: symbol.toUpperCase(),
+          name: name || undefined,
+          exchange: exchange || undefined,
+          provider,
+        },
+      });
+    } catch (error) {
+      // Ignore duplicate key error (unique constraint)
+      if (
+        (error as any).code !== "P2002" ||
+        ((error as any).meta &&
+          (error as any).meta.target &&
+          !(error as any).meta.target.includes("symbol"))
+      ) {
+        throw error;
+      }
+    }
   }
 
   async remove(symbol: string): Promise<void> {
-    await pool.query(`DELETE FROM watchlist WHERE symbol = $1`, [
-      symbol.toUpperCase(),
-    ]);
+    await prisma.watchlist.deleteMany({
+      where: { symbol: symbol.toUpperCase() },
+    });
   }
 }
