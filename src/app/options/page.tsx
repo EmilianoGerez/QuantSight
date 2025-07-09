@@ -16,6 +16,10 @@ import { StrategyLeg } from "@/domain/model/option-strategy-leg";
 import { StrategySummaryPanel } from "@/components/options/strategy/strategy-summary-panel";
 import { PayoffChart } from "@/components/options/strategy/payoff-chart";
 import { AlpacaLatestStockQuote } from "@/infrastructure/contract/alpace-stocks-lastest-quote.contract";
+import { AiStrategyBuilder } from "@/components/options/strategy/ai-strategy-builder";
+import { LlmStrategyRequest } from "@/infrastructure/contract/llm-strategy-request.contract";
+import { LlmStrategySuggestion } from "@/infrastructure/contract/llm-strategy-suggestion.contract";
+import { llmLegsToStrategyLegs } from "@/lib/option-strategy-helpers";
 
 export default function OptionsPage() {
   const [symbol, setSymbol] = useState<string>("");
@@ -26,6 +30,8 @@ export default function OptionsPage() {
   const [sortBy, setSortBy] = useState<"strike" | "iv">("strike");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [basket, setBasket] = useState<StrategyLeg[]>([]);
+  const [aiSuggestion, setAiSuggestion] =
+    useState<LlmStrategySuggestion | null>(null);
 
   // SWR for options data
   const {
@@ -160,6 +166,30 @@ export default function OptionsPage() {
     });
   };
 
+  // Handler to send data to the LLM strategy builder API
+  const handleLlmStrategySubmit = async (data: LlmStrategyRequest) => {
+    try {
+      const response = await fetch("/api/llm-strategy-builder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        // Optionally show error to user
+        console.error("LLM API error:", error);
+        return;
+      }
+      const result: LlmStrategySuggestion = await response.json();
+      console.log("LLM Strategy Suggestion:", result);
+      console.log("LLM Strategy Legs:", result.legs);
+      setBasket(llmLegsToStrategyLegs(result.legs, optionsData || []));
+      setAiSuggestion(result);
+    } catch (err) {
+      console.error("Failed to call LLM API:", err);
+    }
+  };
+
   return (
     <main className="flex flex-col gap-4 p-4 w-full">
       {/* Header: input and filters full width */}
@@ -250,6 +280,24 @@ export default function OptionsPage() {
         </div>
       </div>
 
+      {/* AI Strategy Builder Card - full width, horizontal by default */}
+      {symbol && optionsData && latestQuote && (
+        <Card className="w-full mb-4">
+          <CardHeader>
+            <CardTitle>AI Strategy Builder</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AiStrategyBuilder
+              options={optionsData}
+              stockPrice={latestQuote.quote?.ap ?? 0}
+              underlying={symbol}
+              onSubmit={handleLlmStrategySubmit}
+              layout="horizontal"
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Main content: tables and summary side by side */}
       <div className="flex flex-col xl:flex-row gap-4 w-full">
         <div className="flex-1 space-y-6">
@@ -303,6 +351,7 @@ export default function OptionsPage() {
             onRemoveLeg={(index) => {
               setBasket((prev) => prev.filter((_, i) => i !== index));
             }}
+            aiSuggestion={aiSuggestion ?? undefined}
           />
           <PayoffChart
             legs={basket}
