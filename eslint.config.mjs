@@ -14,6 +14,9 @@ const eslintConfig = [
   {
     rules: {
       "no-console": ["error", { allow: ["warn", "error"] }],
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Deactivate spell checker if present
+      "spellcheck/spell-checker": "off",
     },
   },
 ];

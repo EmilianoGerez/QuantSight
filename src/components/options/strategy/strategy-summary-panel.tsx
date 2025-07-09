@@ -9,17 +9,20 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LlmStrategySuggestion } from "@/infrastructure/contract/llm-strategy-suggestion.contract";
 
 type Props = {
   legs: StrategyLeg[];
   onQuantityChange?: (index: number, newQty: number) => void;
   onRemoveLeg?: (index: number) => void;
+  aiSuggestion?: LlmStrategySuggestion;
 };
 
 export const StrategySummaryPanel: React.FC<Props> = ({
   legs,
   onQuantityChange,
   onRemoveLeg,
+  aiSuggestion,
 }) => {
   const cost = useMemo(() => netCost(legs), [legs]);
   const greeks = useMemo(() => netGreeks(legs), [legs]);
@@ -184,6 +187,31 @@ export const StrategySummaryPanel: React.FC<Props> = ({
           <span>Expiration{exps.length > 1 ? "s" : ""}</span>
           <span>{exps.join(", ")}</span>
         </div>
+
+        {/* AI Suggestion Section */}
+        {aiSuggestion && (
+          <div className="mt-4 p-3 rounded border bg-gray-800 border-gray-700">
+            <div className="font-semibold text-gray-200 mb-1">
+              AI Suggestion
+            </div>
+            <div className="mb-1">
+              <span className="font-medium text-gray-300">Name:</span>{" "}
+              <span className="text-gray-100">{aiSuggestion.name}</span>
+            </div>
+            <div className="mb-1">
+              <span className="font-medium text-gray-300">Rationale:</span>{" "}
+              <span className="text-gray-100">{aiSuggestion.rationale}</span>
+            </div>
+            <div className="mb-1">
+              <span className="font-medium text-gray-300">Outlook:</span>{" "}
+              <span className="text-gray-100">{aiSuggestion.outlook}</span>
+            </div>
+            <div className="mb-1">
+              <span className="font-medium text-gray-300">Risk Profile:</span>{" "}
+              <span className="text-gray-100">{aiSuggestion.riskProfile}</span>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

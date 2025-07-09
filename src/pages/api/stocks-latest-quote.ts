@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import AlpacaRepository from "@/infrastructure/repository/alpaca.repository";
-import { AlpacaLatestStockQuote } from "@/infrastructure/contract/alpace-stocks-lastest-quote.contract";
+import { AlpacaLatestStockQuote } from "@/infrastructure/contract/alpaca-stocks-latest-quote.contract";
 
 const alpacaRepo = new AlpacaRepository();
 

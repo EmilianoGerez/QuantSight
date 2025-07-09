@@ -16,3 +16,26 @@ model OptionSnapshot {
 
   @@index([symbol, snapshotAt])
 }
+
+model Watchlist {
+  id        Int        @id @default(autoincrement())
+  symbol    String     @unique
+  name      String?
+  exchange  String?
+  provider  String     @default("yahoo")
+  addedAt   DateTime   @default(now())
+  ivHistory IvHistory[]
+}
+
+model IvHistory {
+  id          Int      @id @default(autoincrement())
+  symbol      String
+  contractID  String
+  expiration  String
+  iv          Float
+  date        DateTime
+  watchlistId Int
+  watchlist   Watchlist @relation(fields: [watchlistId], references: [id])
+
+  @@index([symbol, date])
+}

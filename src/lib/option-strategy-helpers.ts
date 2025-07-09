@@ -1,5 +1,5 @@
 import { StrategyLeg } from "@/domain/model/option-strategy-leg";
-
+import { OptionRow } from "@/domain/model/option-row.model";
 
 /** Mid-price helper (bid/ask may be null) */
 export const midPrice = (leg: StrategyLeg): number => {
@@ -13,7 +13,7 @@ export const midPrice = (leg: StrategyLeg): number => {
 export const netCost = (legs: StrategyLeg[]): number =>
   legs.reduce((sum, leg) => {
     const dollars = midPrice(leg) * 100 * leg.quantity;
-    return sum + (leg.side === 'buy' ? dollars : -dollars);
+    return sum + (leg.side === "buy" ? dollars : -dollars);
   }, 0);
 
 /** Aggregate Greeks (Δ, Γ, Θ, Vega, Rho) */
@@ -29,34 +29,32 @@ export const netGreeks = (legs: StrategyLeg[]): NetGreeks =>
     (sum, leg) => ({
       delta:
         sum.delta +
-        (leg.delta ?? 0) * (leg.side === 'buy' ? 1 : -1) * leg.quantity,
+        (leg.delta ?? 0) * (leg.side === "buy" ? 1 : -1) * leg.quantity,
       gamma:
         sum.gamma +
-        (leg.gamma ?? 0) * (leg.side === 'buy' ? 1 : -1) * leg.quantity,
+        (leg.gamma ?? 0) * (leg.side === "buy" ? 1 : -1) * leg.quantity,
       theta:
         sum.theta +
-        (leg.theta ?? 0) * (leg.side === 'buy' ? 1 : -1) * leg.quantity,
+        (leg.theta ?? 0) * (leg.side === "buy" ? 1 : -1) * leg.quantity,
       vega:
         sum.vega +
-        (leg.vega ?? 0) * (leg.side === 'buy' ? 1 : -1) * leg.quantity,
+        (leg.vega ?? 0) * (leg.side === "buy" ? 1 : -1) * leg.quantity,
       rho:
-        sum.rho +
-        (leg.rho ?? 0) * (leg.side === 'buy' ? 1 : -1) * leg.quantity,
+        sum.rho + (leg.rho ?? 0) * (leg.side === "buy" ? 1 : -1) * leg.quantity,
     }),
-    { delta: 0, gamma: 0, theta: 0, vega: 0, rho: 0 },
+    { delta: 0, gamma: 0, theta: 0, vega: 0, rho: 0 }
   );
 
 /** Unique expirations in basket */
 export const expirations = (legs: StrategyLeg[]): string[] =>
   Array.from(new Set(legs.map((l) => l.expiration)));
 
-
 export function computePayoffAtPrice(
   price: number,
   legs: StrategyLeg[]
 ): number {
   return legs.reduce((total, leg) => {
-    const isCall = leg.type === 'call';
+    const isCall = leg.type === "call";
     const intrinsic = isCall
       ? Math.max(price - leg.strike, 0)
       : Math.max(leg.strike - price, 0);
@@ -64,8 +62,42 @@ export function computePayoffAtPrice(
     const mid = ((leg.ask ?? 0) + (leg.bid ?? 0)) / 2 || 0;
     const entryCost = mid * 100;
     const pnlPerContract =
-      (intrinsic * 100 - entryCost) * (leg.side === 'buy' ? 1 : -1);
+      (intrinsic * 100 - entryCost) * (leg.side === "buy" ? 1 : -1);
 
     return total + pnlPerContract * leg.quantity;
   }, 0);
+}
+
+/**
+ * Convert a simple action object to a StrategyLeg, using OptionRow[] for contract details.
+ * @param actionObj - { action: "Buy"|"Sell", contract: string, quantity: number }
+ * @param options - OptionRow[]
+ * @returns StrategyLeg | undefined
+ */
+export function llmLegToStrategyLeg(
+  llmLeg: { action: string; contract: string; quantity: number, strike: number },
+  options: OptionRow[]
+): StrategyLeg | undefined {
+  const found = options.find((o) => o.contract === llmLeg.contract);
+  if (!found) return undefined;
+  return {
+    ...found,
+    side: llmLeg.action.toLowerCase() === "buy" ? "buy" : "sell",
+    quantity: llmLeg.quantity,
+  };
+}
+
+/**
+ * Convert an array of action objects to an array of StrategyLegs, using OptionRow[] for contract details.
+ * @param actions - Array<{ action: "Buy"|"Sell", contract: string, quantity: number }>
+ * @param options - OptionRow[]
+ * @returns StrategyLeg[] (filters out any not found)
+ */
+export function llmLegsToStrategyLegs(
+  llmLegs: { action: string; contract: string; quantity: number, strike: number }[],
+  options: OptionRow[]
+): StrategyLeg[] {
+  return llmLegs
+    .map((leg) => llmLegToStrategyLeg(leg, options))
+    .filter((leg): leg is StrategyLeg => !!leg);
 }

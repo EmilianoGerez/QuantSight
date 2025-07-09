@@ -1,7 +1,7 @@
 import Alpaca from "@alpacahq/alpaca-trade-api";
 import { AlpacaOptionsChainResponse } from "@/infrastructure/contract/alpaca-options-snapshots.contract";
 import { IAlpacaRepository } from "@/domain/repository/alpaca.repository";
-import { AlpacaLatestStockQuote } from "../contract/alpace-stocks-lastest-quote.contract";
+import { AlpacaLatestStockQuote } from "../contract/alpaca-stocks-latest-quote.contract";
 
 export default class AlpacaRepository implements IAlpacaRepository {
   private readonly alpaca: Alpaca;
